@@ -1,0 +1,83 @@
+#include <LiquidCrystal.h>
+
+// HC-SR04 pins
+#define TRIG_PIN 3
+#define ECHO_PIN 4
+
+// LCD display pins (ändrade till dina pinnar)
+LiquidCrystal display(7, 8, 9, 10, 11, 12);
+
+String quote = "";
+bool quoteDisplayed = false;
+
+void setup() {
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  Serial.begin(9600);
+  
+  // Initiera LCD displayen (16 kolumner och 2 rader)
+  display.begin(16, 2);
+  display.setCursor(0, 0);
+  display.print("Waiting for quote...");
+}
+
+void loop() {
+  long duration, distance;
+
+  // Trigger ultraljudspulsen
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  // Läs echo
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = duration * 0.034 / 2;
+
+  if (distance > 0 && distance < 10 && !quoteDisplayed) {
+    Serial.println("GET_QUOTE");  // Berätta för Python att skicka ett citat
+    quote = waitForQuote();  // Vänta på citatet från Python
+    scrollQuote(quote);  // Scrolla citatet på displayen
+    quoteDisplayed = true;
+  }
+
+  if (distance >= 10) {
+    quoteDisplayed = false;  // Återställ om inget objekt är inom räckhåll
+  }
+
+  delay(100);  // Justera för att minska belastning
+}
+
+// Vänta på ett citat från Python-skriptet (timeout efter 3 sekunder)
+String waitForQuote() {
+  String q = "";
+  unsigned long start = millis();
+  while (millis() - start < 3000) {
+    if (Serial.available()) {
+      q = Serial.readStringUntil('\n');  // Läs tills newline
+      break;
+    }
+  }
+  if (q == "") {
+    q = "No quote received.";  // Fallback om inget citat tas emot
+  }
+  return q;
+}
+
+// Funktion för att scrolla citatet på displayen
+void scrollQuote(String q) {
+  int textLength = q.length();
+  int windowSize = 16;  // LCD bredd i tecken
+
+  // Lägg till extra mellanslag i slutet för mjuk scroll ut
+  q += "                ";
+
+  for (int i = 0; i < q.length() - windowSize + 1; i++) {
+    String window = q.substring(i, i + windowSize);
+    display.setCursor(0, 0);
+    display.print(window);
+    delay(300);  // Justera scrollhastighet här
+  }
+}
