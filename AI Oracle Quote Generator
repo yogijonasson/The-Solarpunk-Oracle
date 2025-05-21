@@ -1,0 +1,89 @@
+# 🌞 Solarpunk Oracle: Gemini-powered poetic line generator with Cooldown and Fallback
+
+# STEP 1: Install Gemini SDK
+
+# STEP 2: Import libraries
+import google.generativeai as genai
+import time
+import random
+import serial
+
+# STEP 3: Authenticate with your Gemini API key
+# 👇 Paste your key below
+API_KEY = #add api key here
+genai.configure(api_key=API_KEY)
+
+# Serial setup 
+ser = serial.Serial('/dev/cu.usbmodem1201', 9600)
+time.sleep(2)
+
+# STEP 4: Create the model object
+model = genai.GenerativeModel('models/gemini-2.0-flash-lite')
+
+# Cooldown settings
+COOLDOWN_TIME = 15  # Cooldown in seconds
+last_request_time = 0
+
+# Fallback responses
+fallback_lines = [
+    'Rain comes. Sun follows. Keep moving.',
+    'Breathe in. Breathe out. You’re here.',
+    'Rest isn’t quitting. It’s growing.',
+    'Lost? Pause. Listen. The path whispers.',
+    'Not all roots run deep, but they still hold.',
+    'Sunrise never misses a day.',
+    'Rivers carve canyons one drop at a time.',
+    'Silence isn’t empty. It’s full of echoes.',
+    'Growth is slow, but it’s happening.',
+    'You’re here. That’s enough for now.',
+    'Paths twist and turn, but they lead somewhere.',
+    'Clouds carry rain, but they float too.',
+    'Home is closer than you think.',
+    'Let go. Make space for the new.',
+    'The moon moves tides without a sound.',
+    'Darkness holds seeds of light.',
+    'Pause. The earth isn’t rushing. Neither should you.',
+    'Leaves fall, but they still dance.',
+    'Night sings too. Listen closely.',
+    'What’s lost isn’t gone. It’s just somewhere new.'
+]
+
+# Function to get fallback response
+def get_fallback_response():
+    return random.choice(fallback_lines)
+
+# Function to get poetic response from Gemini
+def ask_oracle():
+    try:
+        prompt = (
+            "You are a Solarpunk oracle. Respond with a short, impactful line that is simple, grounded, and nature-inspired. "
+            "Think of phrases that could be mantras or reminders, like 'Rain comes. Sun follows.' or 'Look up. Breathe.' "
+        )
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print("⚠️ API Error:", e)
+        return get_fallback_response()
+
+# STEP 6: Main execution with cooldown
+current_time = time.time()
+
+if current_time - last_request_time >= COOLDOWN_TIME:
+    last_request_time = current_time
+    oracle_message = ask_oracle()
+else:
+    remaining_time = COOLDOWN_TIME - (current_time - last_request_time)
+    print(f"Cooldown active. Try again in {remaining_time:.1f} seconds.")
+
+print(f"🌿 Oracle says: {oracle_message}")
+
+while True:
+    if ser.in_waiting:
+        line = ser.readline().decode().strip()
+        print(f"🔍 Received from Arduino: {line}")  # <-- this line is key for debugging
+
+        if line == "GET_QUOTE":
+            print("👋 Arduino requested a quote")
+            quote = ask_oracle()
+            print(f"🌀 Sending: {quote}")
+            ser.write((quote + '\n').encode())
