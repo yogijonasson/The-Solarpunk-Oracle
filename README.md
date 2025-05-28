@@ -2,6 +2,10 @@
 
 The **Solarpunk Oracle** is an interactive installation that invites visitors to explore hopeful futures through symbolic gestures and poetic AI responses. Inspired by Solarpunk aesthetics and ethics, the Oracle blends physical computing with ambient design to create a moment of multisensory reflection.
 
+## 📹 Demo Video
+
+[![Watch the video](https://img.youtube.com/vi/brxwXBemLDk/0.jpg)](https://www.youtube.com/watch?v=brxwXBemLDk)
+
 ## 🌟 Project Goals
 
 * Reimagine AI as a poetic, non-dystopian companion.
