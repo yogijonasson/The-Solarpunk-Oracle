@@ -59,7 +59,4 @@ With a wave of the hand, the Oracle awakens and speaks:
 
 This project explores poetic, embodied interaction with AI. It offers a hopeful and human-centric perspective on technology by evoking emotion, presence, and imagination—rooted in the values of the Solarpunk movement.
 
----
-
-Let me know if you'd like a visual interaction diagram or poster version!
 
